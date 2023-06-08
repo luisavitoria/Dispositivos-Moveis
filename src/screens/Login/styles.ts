@@ -1,13 +1,26 @@
-import { StyleSheet, TextStyle} from 'react-native'
+import { StyleSheet, TextStyle, ViewStyle} from 'react-native'
 import { THEME } from '../../theme'
 
 type Style = {
+    container: ViewStyle;
+    containerPosition: ViewStyle;
     header: TextStyle;
     link: TextStyle;
     errorMessage: TextStyle;
 }
 
 export const styles = StyleSheet.create<Style>({
+    container: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        color: THEME.COLORS.TEXTSECONDARY,
+        marginTop: 120,
+        
+    }, 
+    containerPosition: {
+        alignItems: "center",
+        marginTop: 50
+    },
     header: {
         color: THEME.COLORS.BLACK,
         fontSize: THEME.FONT_SIZE.LG,

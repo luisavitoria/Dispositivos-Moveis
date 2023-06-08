@@ -3,7 +3,7 @@ import { UserCircle, UsersFour } from 'phosphor-react-native';
 import React, { useContext } from 'react';
 import { Text, TouchableOpacity, View, Image } from 'react-native';
 import userMan from '../../../assets/images/man.png'
-import userWoman from '../../../assets/images/woman2.png'
+import userWoman from '../../../assets/images/woman.png'
 
 import { styles } from './styles';
 
