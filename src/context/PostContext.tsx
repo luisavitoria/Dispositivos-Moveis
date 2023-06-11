@@ -43,7 +43,6 @@ const Provider = ({ children }: { children: ReactNode }) => {
             const q = query(collection(db, "posts"), orderBy('created', 'asc'));
 
             const querySnapshot = await getDocs(q);
-            console.log(querySnapshot.docs)
 
             querySnapshot.forEach((doc) => {
                 const d = {...doc.data(), id: doc.id}

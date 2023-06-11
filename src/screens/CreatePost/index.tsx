@@ -86,7 +86,6 @@ const CreatePost = ({ user, name, navigation }: CreatePostProps) => {
                 }
             </View>
 
-
             <Button onPress={() => { 
                 createPost && createPost(description, photoShow, photoName)
             }} title='Postar' />

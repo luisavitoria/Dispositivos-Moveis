@@ -45,4 +45,20 @@ export const styles = StyleSheet.create({
         marginBottom: 5,
         marginLeft: 8
     },
+    buttonStyle: {
+        backgroundColor: THEME.COLORS.PRIMARYDARK,
+        color: THEME.COLORS.TEXTPRIMARY,
+        height: 40,
+        alignItems: 'center',
+        borderRadius: 30,
+        marginLeft: 35,
+        marginRight: 35,
+        marginVertical: 15,
+        paddingHorizontal: 10
+    },
+    buttonTextStyle: {
+        color: THEME.COLORS.TEXTPRIMARY,
+        paddingVertical: 10,
+        fontSize: 16,
+    },
 })
