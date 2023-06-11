@@ -23,9 +23,8 @@ const CreatePost = ({ user, name, navigation }: CreatePostProps) => {
     const { createPost } = useContext(PostContext)
 
     const [description, setDescription] = useState('')
-    const [photo, setPhoto] = useState(null);
+    const [photoName, setPhotoName] = useState('');
     const [photoShow, setPhotoShow] = useState('');
-    let formData = new FormData();
 
     const takePhotoAndUpload = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -41,28 +40,15 @@ const CreatePost = ({ user, name, navigation }: CreatePostProps) => {
         let localUri = result.assets[0].uri;
         setPhotoShow(localUri);
         let filename = localUri.split('/').pop();
+        
 
-        let type;
         if (filename) {
-            let match = /\.(\w+)$/.exec(filename);
-            type = match ? `image/${match[1]}` : `image`;
-        }
-
-        if (result.assets !== null) {
-            if (filename && type && localUri) {
-                setPhoto(JSON.parse(JSON.stringify({ uri: localUri, name: filename, type })))
-            }
+            setPhotoName(filename)
         }
 
     }
 
-    if (photo) {
-        formData.append('file', photo)
-        formData.append('description', description)
-    } else {
-        formData.append('description', description)
-    }
-
+    
     return (
         <View style={styles.container} >
             <View style={styles.heading}>
@@ -102,8 +88,7 @@ const CreatePost = ({ user, name, navigation }: CreatePostProps) => {
 
 
             <Button onPress={() => { 
-                createPost && createPost(formData, navigation)
-                navigation.navigate('HomeNavigator', {screen: 'Home'})
+                createPost && createPost(description, photoShow, photoName)
             }} title='Postar' />
            
         </View>

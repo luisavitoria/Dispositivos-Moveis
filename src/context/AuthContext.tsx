@@ -1,22 +1,33 @@
 import React, { useReducer, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store'
+import { setDoc, getDoc, doc, getFirestore } from '@firebase/firestore';
+
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+
 import { Auth } from '../@types/auth';
 import { Action } from '../@types/reducer';
 
 interface iAuthContext {
+    token: boolean | null;
     userRegister: string | null;
     userName: string | null;
+    profileImage: string | null;
+    cpf: string | null;
+    email: string | null;
     isLoading: boolean;
     errorMessage: string | null;
     login?: (auth: Auth) => {};
-    register?: () => void;
+    signUp?: (auth: Auth) => void;
     tryLocalLogin?: () => void;
     logout?: () => void;
 }
 
 const defaultValue = {
+    token: false,
     userRegister: null,
     userName: null,
+    profileImage: null,
+    cpf: null,
+    email: null,
     isLoading: true,
     errorMessage: null
 }
@@ -31,8 +42,10 @@ const Provider = ({ children }: { children: ReactNode }) => {
                     ...action.payload,
                     errorMessage: null
                 }
+            case 'user_created':
+                return { ...state, errorMessage: null }
             case 'logout':
-                return { userRegister: null, userName: null, errorMessage: null }
+                return { token: false, userRegister: null, userName: null, errorMessage: null }
             case "add_error":
                 return { ...state, errorMessage: action.payload }
             default:
@@ -42,17 +55,49 @@ const Provider = ({ children }: { children: ReactNode }) => {
 
     const [state, dispatch] = useReducer(reducer, defaultValue)
 
-    const login = async ({ cpf, password }: Auth) => {
+    const signUp = async ({ email, password, name, cpf, register }: Auth) => {
         try {
-            if (cpf === '96233753600' && password === '123456') {
-                await SecureStore.setItemAsync('userRegister', '123456')
-                await SecureStore.setItemAsync('userName', 'Luísa Anjos')
-            } else {
-                throw 'CPF ou senha incorreta'
-            }
+
+            const auth = getAuth();
+            const response = await createUserWithEmailAndPassword(auth, email, password)
+
+            const db = getFirestore()
+            setDoc(doc(db, 'users', response.user.uid), {
+                name,
+                email,
+                cpf,
+                register
+            })
+
+            alert('Usuário cadastrado com sucesso!')
+
+            dispatch({
+                type: 'user_created',
+            })
+        } catch (err) {
+            console.error(err)
+            dispatch({
+                type: 'add_error',
+                payload: 'Houve algum erro no cadastro...'
+            })
+        }
+    }
+
+    const login = async ({ email, password }: Auth) => {
+        try {
+            const auth = getAuth();
+            const response = await signInWithEmailAndPassword(auth, email, password)
+
+            const uid = response.user.uid
+            const db = getFirestore()
+
+            const user = await getDoc(doc(db, 'users', uid))
+
+            const { register, name, profileImage, cpf } = user.data()
+
             dispatch({
                 type: 'login',
-                payload: { userRegister: '123456', userName: 'Luísa Anjos' }
+                payload: { token: true, userRegister: register, userName: name, profileImage, cpf, email: user.data().email }
             })
         } catch (err) {
             dispatch({
@@ -63,13 +108,17 @@ const Provider = ({ children }: { children: ReactNode }) => {
     }
 
     const tryLocalLogin = async () => {
-        let userRegister, userName;
+        let token = false
 
         try {
-            userRegister = await SecureStore.getItemAsync('userRegister')
-            userName = await SecureStore.getItemAsync('userName')
+            const auth = getAuth();
+            await onAuthStateChanged(auth, user => {
+                if (user != null) {
+                    token = true
+                }
+            });
 
-            dispatch({ type: 'login', payload: { userRegister, userName } })
+            dispatch({ type: 'login', payload: { token } })
 
         } catch (err) {
             console.error(err)
@@ -78,8 +127,8 @@ const Provider = ({ children }: { children: ReactNode }) => {
 
     const logout = async () => {
         try {
-            await SecureStore.deleteItemAsync('userRegister')
-            await SecureStore.deleteItemAsync('userName')
+            const auth = getAuth()
+            await auth.signOut()
 
             dispatch({
                 type: 'logout',
@@ -95,6 +144,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
             value={{
                 ...state,
                 login,
+                signUp,
                 tryLocalLogin,
                 logout
             }}

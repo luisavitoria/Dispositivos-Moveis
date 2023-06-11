@@ -9,7 +9,7 @@ import { styles } from './styles';
 const HeaderLogo = () => {
     return (
         <View style={styles.container}>
-            <Image source={logo}></Image>
+            <Image style={{width: 100}} source={logo}></Image>
 
             <Text style={styles.header}>Cesmac Networking</Text>
         </View>

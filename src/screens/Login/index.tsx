@@ -7,7 +7,7 @@ import { Formik } from 'formik'
 import * as yup from 'yup'
 import { cpf } from "cpf-cnpj-validator";
 import { styles } from './styles';
-import { User, Lock } from 'phosphor-react-native'
+import { Envelope, Lock } from 'phosphor-react-native'
 import { THEME } from '../../theme';
 
 import { Input } from '../../components/Input';
@@ -23,10 +23,10 @@ const Login = ({ navigation }: LoginProps) => {
   const { login, errorMessage } = useContext(AuthContext)
 
   const loginValidationSchema = yup.object().shape({
-    cpf: yup
+    email: yup
       .string()
-      .required('CPF é um campo obrigatório')
-      .test({ message: "CPF inválido", test: (value) => cpf.isValid(value) }),
+      .email('E-mail inválido')
+      .required('E-mail é um campo obrigatório'),
     password: yup
       .string()
       .min(6, ({ min }) => `A senha deve ter ao menos ${min} caracteres`)
@@ -40,7 +40,7 @@ const Login = ({ navigation }: LoginProps) => {
 
         <Formik
           validationSchema={loginValidationSchema}
-          initialValues={{ cpf: '', password: '' }}
+          initialValues={{ email: '', password: '' }}
           onSubmit={(values) => {
             login && login(values)
           }}
@@ -48,25 +48,25 @@ const Login = ({ navigation }: LoginProps) => {
           {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => (
             <>
               <View>
-                <Text style={{ marginTop: 2 }}>CPF</Text>
+                <Text style={{ marginTop: 2 }}>E-mail</Text>
 
                 <Input.Container>
                   <Input.Icon>
-                    <User color='#ffffff' />
+                    <Envelope color='#ffffff' />
                   </Input.Icon>
                   <Input.Input
-                    onChangeText={handleChange('cpf')}
-                    placeholder='00122233344'
+                    onChangeText={handleChange('email')}
+                    placeholder='user@cesmac.edu.br'
                     placeholderTextColor={THEME.COLORS.INPUT}
                     autoCapitalize='none'
                     autoCorrect
-                    onBlur={handleBlur('cpf')}
-                    value={values.cpf}
+                    onBlur={handleBlur('email')}
+                    value={values.email}
                   />
                 </Input.Container>
 
-                {errors.cpf &&
-                  <Text style={{ fontSize: 10, color: 'red' }}>{errors.cpf}</Text>
+                {errors.email &&
+                  <Text style={{ fontSize: 10, color: 'red' }}>{errors.email}</Text>
                 }
               </View>
 
@@ -104,7 +104,7 @@ const Login = ({ navigation }: LoginProps) => {
         <Text style={styles.link}>Não possui conta? Crie uma agora!</Text>
       </TouchableOpacity>
 
-      {errorMessage && <Text style={{ textAlign: 'center', marginTop: 18, color: "red" }}>CPF ou senha incorreta</Text>}
+      {errorMessage && <Text style={{ textAlign: 'center', marginTop: 18, color: "red" }}>E-mail ou senha incorreta</Text>}
     </>
   )
 }

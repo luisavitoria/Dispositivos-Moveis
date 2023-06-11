@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useContext } from 'react';
 import { styles } from './styles';
-import { View, Text, TouchableOpacity, Image} from 'react-native';
-import { NotePencil } from 'phosphor-react-native'
+import { Context as AuthContext } from '../../context/AuthContext';
+import { Context as PostContext } from '../../context/PostContext';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { NotePencil, ArrowsClockwise } from 'phosphor-react-native'
 import { StackNavigationProp } from '@react-navigation/stack'
 import Feed from '../../components/Feed';
-import profileImage from '../../../assets/images/profile.jpg'
 
 interface HomeProps {
   navigation: StackNavigationProp<any, any>;
@@ -14,33 +15,43 @@ interface HomeProps {
   screenName: string;
 }
 
-const Home = ({navigation, user, name, screenName}: HomeProps) => {
-  
+const Home = ({ navigation, user, name, screenName }: HomeProps) => {
+  const { userRegister, profileImage, tryLocalLogin } = useContext(AuthContext)
+  const { getPosts } = useContext(PostContext)
   function handlePencilPress() {
     navigation.navigate("CreatePost")
+  }
+
+  function handleRefresh() {
+    getPosts && getPosts()
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.heading}>
-        <Image source={profileImage} style={styles.profile_image} /> 
+        {profileImage && <Image source={{ uri: profileImage }} style={styles.profile_image} />}
 
         <Text style={styles.userNameText}>{name}</Text>
 
-        {user && <Text style={styles.userUserText}>{`@${user}`}</Text> }
+        {user && <Text style={styles.userUserText}>{`@${user}`}</Text>}
 
-        <View style={{flex: 1}}></View>
+        <View style={{ flex: 1 }}></View>
 
-        <TouchableOpacity onPress={handlePencilPress}>
+        <TouchableOpacity onPress={handlePencilPress} style={{ marginRight: 4}}>
           <NotePencil color='white' weight='thin' size={40} />
         </TouchableOpacity>
-        
+
+
+        <TouchableOpacity onPress={handleRefresh}>
+          <ArrowsClockwise color='white' weight='thin' size={32} />
+        </TouchableOpacity>
+
       </View>
 
       <View style={styles.content}>
         <Feed screenName={screenName} navigation={navigation} />
       </View>
-      
+
     </View>
   )
 }

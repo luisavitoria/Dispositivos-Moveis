@@ -14,7 +14,7 @@ export const styles = StyleSheet.create<Style>({
         flexDirection: 'column',
         alignItems: 'center',
         color: THEME.COLORS.TEXTSECONDARY,
-        marginTop: 120,
+        marginTop: 20,
         
     }, 
     containerPosition: {

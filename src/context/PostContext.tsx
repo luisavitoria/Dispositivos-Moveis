@@ -1,8 +1,10 @@
 import React, { useReducer, ReactNode } from 'react';
 import { Action } from '../@types/reducer';
 import { Post } from '../@types/post';
-import { posts } from '../../posts';
 
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { orderBy, Timestamp, addDoc, getDoc, doc, getFirestore, getDocs, collection, query } from '@firebase/firestore';
 
 interface iPostContext {
     posts: Post[];
@@ -10,7 +12,7 @@ interface iPostContext {
     getPosts?: () => void;
     likePost?: ({ postId }: { postId: string }) => void;
     unlikePost?: ({ postId }: { postId: string }) => void;
-    createPost?: (formData: any, navigation: any) => void;
+    createPost?: (description: string, image: string, imageName: string) => void;
 }
 const defaultValue = {
     posts: [],
@@ -23,7 +25,7 @@ const Provider = ({ children }: { children: ReactNode }) => {
     const reducer = (state: any, action: Action) => {
         switch (action.type) {
             case 'create_post':
-                return { ...state, posts: [...state.posts, action.payload] }
+                return { ...state, posts: [...state.posts] }
             case 'show_posts':
                 return { ...state, posts: action.payload }
         }
@@ -33,7 +35,21 @@ const Provider = ({ children }: { children: ReactNode }) => {
     const [state, dispatch] = useReducer(reducer, defaultValue)
 
     const getPosts = async () => {
+
         try {
+            const db = getFirestore()
+            let posts: any[] = []
+
+            const q = query(collection(db, "posts"), orderBy('created', 'asc'));
+
+            const querySnapshot = await getDocs(q);
+            console.log(querySnapshot.docs)
+
+            querySnapshot.forEach((doc) => {
+                const d = {...doc.data(), id: doc.id}
+                posts.push(d)
+            });
+
             dispatch({
                 type: 'show_posts',
                 payload: posts
@@ -44,29 +60,61 @@ const Provider = ({ children }: { children: ReactNode }) => {
         }
     }
 
-    const createPost = async (formData: any, navigation: any) => {
+    const createPost = async (description: string, image: string, imageName: string) => {
         try {
-            let description;
+            let post;
+            let pathImage: any;
+            if (image) {
+                const blob = await new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.onload = function () {
+                        resolve(xhr.response);
+                    };
+                    xhr.onerror = function () {
+                        reject(new TypeError('Network request failed'));
+                    };
+                    xhr.responseType = 'blob';
+                    xhr.open('GET', image, true);
+                    xhr.send(null);
+                })
+                const fileRef = ref(getStorage(), imageName);
+                const result = await uploadBytes(fileRef, blob);
 
-            if (formData._parts.length === 1) {
-                description = formData._parts[0][1]
-            } else {
-                description = formData._parts[1][1]
+                pathImage = await getDownloadURL(fileRef);
             }
 
-            let post = {
-                name: 'Luísa Anjos',
-                profileImage: true,
-                pathProfileImage: require('../../assets/images/profile.jpg'),
-                register: "123456",
-                description: description,
-                image: false,
-                likes: []
-            }
+            const auth = getAuth();
+            await onAuthStateChanged(auth, async (user) => {
+                if (user != null) {
+                    const db = getFirestore()
+                    const u = await getDoc(doc(db, 'users', user.uid))
 
-            dispatch({ type: 'create_post', payload: post })
-            navigation.navigate('HomeNavigator', {screen: 'Home'})
+                    const { register, name, profileImage } = await u.data()
+                    let hasImage = image
 
+                    try {
+                        post = await addDoc(collection(db, 'posts'), {
+                            description: description,
+                            image: hasImage ? true : false,
+                            pathImage: hasImage ? pathImage : '',
+                            register: register,
+                            name: name,
+                            pathProfileImage: profileImage,
+                            profileImage: profileImage ? true : false,
+                            likes: [],
+                            created: Timestamp.now()
+                        })
+
+                        alert('Post realizado com sucesso!')
+
+                    } catch (error) {
+                        console.log(error)
+                    }
+
+                }
+            });
+
+            dispatch({ type: 'create_post' })
         } catch (err) {
             console.error(err)
         }

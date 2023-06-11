@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { Text, TouchableOpacity, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { User, Lock, IdentificationCard, Student, Envelope } from 'phosphor-react-native'
+import { Context as AuthContext } from '../../context/AuthContext';
 import { Formik } from 'formik'
 import * as yup from 'yup'
 import { cpf } from "cpf-cnpj-validator";
@@ -12,11 +13,14 @@ import { Input } from '../../components/Input';
 import Button from '../../components/Button';
 import { styles } from './styles';
 
+
 interface SignUpProps {
     navigation: StackNavigationProp<any, any>;
 }
 
 const SignUp = ({ navigation }: SignUpProps) => {
+
+   const { signUp, errorMessage } = useContext(AuthContext)
 
     const signUpValidationSchema = yup.object().shape({
         name: yup
@@ -35,7 +39,7 @@ const SignUp = ({ navigation }: SignUpProps) => {
             .required('E-mail é um campo obrigatório'),
         password: yup
             .string()
-            .min(6, ({ min }) => `A senha deve ter ao menos ${min} characters`)
+            .min(6, ({ min }) => `A senha deve ter ao menos ${min} caracteres`)
             .required('Senha é um campo obrigatório'),
     })
 
@@ -48,7 +52,9 @@ const SignUp = ({ navigation }: SignUpProps) => {
                     <Formik
                         validationSchema={signUpValidationSchema}
                         initialValues={{ name: '', register: '', cpf: '', email: '', password: '' }}
-                        onSubmit={handleLogin}
+                        onSubmit={(values) => {
+                            signUp && signUp(values)
+                        }}
                     >
                         {({ handleChange, handleBlur, handleSubmit, values, errors, isValid }) => (
                             <>
@@ -181,6 +187,7 @@ const SignUp = ({ navigation }: SignUpProps) => {
             <TouchableOpacity onPress={() => navigation.navigate("Login")}>
                 <Text style={styles.link}>Já possui conta? Entre agora!</Text>
             </TouchableOpacity>
+            {errorMessage && <Text style={{ textAlign: 'center', marginTop: 18, color: "red" }}>{errorMessage}</Text>}
 
         </>
     )

@@ -4,6 +4,9 @@ import { NavigationContainer, createNavigationContainerRef, DefaultTheme } from 
 import { createStackNavigator } from '@react-navigation/stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { initializeApp } from '@firebase/app';
+import { getFirestore } from "firebase/firestore";
+import { firebaseConfig } from './src/config/firebase-config';
 import { THEME } from './src/theme';
 import { HouseSimple, UsersThree, User } from 'phosphor-react-native';
 
@@ -27,7 +30,9 @@ const MyTheme = {
 }
 
 function App() {
-  const { userRegister, tryLocalLogin } = useContext(AuthContext)
+  const app = initializeApp(firebaseConfig)
+  
+  const { token, userName, tryLocalLogin } = useContext(AuthContext)
 
   useEffect(() => {
     tryLocalLogin && tryLocalLogin()
@@ -39,7 +44,7 @@ function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer ref={navigationRef} theme={MyTheme}>
-        {!userRegister ?
+        {!token ?
           <Stack.Navigator screenOptions={{
             headerShown: false,
           }}>

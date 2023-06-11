@@ -1,5 +1,5 @@
 
-import React, { useContext, useEffect }from 'react';
+import React, { useContext, useEffect } from 'react';
 import { FlatList, View } from 'react-native';
 import { StackNavigationProp } from '@react-navigation/stack'
 import PostItem from '../PostItem';
@@ -11,19 +11,22 @@ interface FeedProps {
   navigation?: StackNavigationProp<any, any>;
 }
 
-const Feed = ({screenName, navigation}: FeedProps) => {
-  const {getPosts, posts} = useContext(PostContext)
+const Feed = ({ screenName, navigation }: FeedProps) => {
+  const { getPosts, posts } = useContext(PostContext)
 
   useEffect(() => {
     getPosts && getPosts()
-  },[])
+  }, [])
 
   return (
     <View>
-      <FlatList
-        data={posts.slice(0).reverse()}
-        renderItem={({ item }) => <PostItem post={item} screenName={screenName} navigation={navigation} />}
-      /> 
+      {posts &&
+        <FlatList
+          data={posts.slice(0).reverse()}
+          renderItem={({ item }) => <PostItem post={item} screenName={screenName} navigation={navigation} />}
+        />
+      }
+
     </View>
   )
 }
